@@ -33,9 +33,7 @@ public class QuizController {
 
     /** Submit answers for a timed attempt. Requires auth so we know whose progress to record. */
     @PostMapping("/{quizId}/attempts")
-    public ResponseEntity<AttemptResultDto> submitAttempt(@PathVariable Long quizId,
-                                                            @Valid @RequestBody SubmitAttemptRequest request,
-                                                            Authentication authentication) {
+    public ResponseEntity<AttemptResultDto> submitAttempt(@PathVariable Long quizId,@Valid @RequestBody SubmitAttemptRequest request,Authentication authentication) {
         return ResponseEntity.ok(quizService.submitAttempt(authentication.getName(), quizId, request));
     }
 

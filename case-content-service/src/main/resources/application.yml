@@ -4,18 +4,24 @@ server:
 spring:
   application:
     name: case-content-service
+
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/sql_murder_mystery}
-    username: ${SPRING_DATASOURCE_USERNAME:smm_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:smm_pass}
+    # These variables must point to the Aiven MySQL database.
+    # Keep the Aiven credentials in docker-compose/.env, not in source control.
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
   jpa:
     hibernate:
       ddl-auto: update
     defer-datasource-initialization: true
     show-sql: false
+
   sql:
     init:
       mode: always
+      data-locations: classpath:case-data.sql
 
 eureka:
   client:
