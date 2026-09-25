@@ -1,3 +1,4 @@
+
 package com.sqlmurdermystery.auth.dto;
 
 import com.sqlmurdermystery.auth.model.Role;
@@ -5,12 +6,12 @@ import com.sqlmurdermystery.auth.model.User;
 
 public class UserResponse {
 
-    private Long id;
+    private Integer id;
     private String username;
     private String email;
     private Role role;
 
-    public UserResponse(Long id, String username, String email, Role role) {
+    public UserResponse(Integer id, String username, String email, Role role) {
         this.id = id;
         this.username = username;
         this.email = email;
@@ -18,11 +19,28 @@ public class UserResponse {
     }
 
     public static UserResponse from(User user) {
-        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole());
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole()
+        );
     }
 
-    public Long getId() { return id; }
-    public String getUsername() { return username; }
-    public String getEmail() { return email; }
-    public Role getRole() { return role; }
+    public Integer getId() {
+        return id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public Role getRole() {
+        return role;
+    }
 }
+

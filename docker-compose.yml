@@ -53,16 +53,14 @@ services:
     build: ./auth-service
     container_name: smm-auth-service
     depends_on:
-      mysql:
-        condition: service_healthy
       service-registry:
         condition: service_started
     ports:
       - "8081:8081"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sql_murder_mystery
-      SPRING_DATASOURCE_USERNAME: smm_user
-      SPRING_DATASOURCE_PASSWORD: smm_pass
+      SPRING_DATASOURCE_URL: ${AIVEN_MYSQL_URL}
+      SPRING_DATASOURCE_USERNAME: ${AIVEN_MYSQL_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${AIVEN_MYSQL_PASSWORD}
       EUREKA_URI: http://service-registry:8761/eureka
       JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
 
