@@ -63,6 +63,9 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${AIVEN_MYSQL_PASSWORD}
       EUREKA_URI: http://service-registry:8761/eureka
       JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
+      NOTIFICATION_SERVICE_URL: http://notification-service:8086
+      NOTIFICATION_INTERNAL_TOKEN: ${NOTIFICATION_INTERNAL_TOKEN:-change-this-internal-token}
+      INACTIVITY_DAYS: ${INACTIVITY_DAYS:-7}
 
   case-content-service:
     build: ./case-content-service
@@ -142,6 +145,12 @@ services:
     environment:
       EUREKA_URI: http://service-registry:8761/eureka
       JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-}
+      NOTIFICATION_INTERNAL_TOKEN: ${NOTIFICATION_INTERNAL_TOKEN:-change-this-internal-token}
 
   frontend:
     build:

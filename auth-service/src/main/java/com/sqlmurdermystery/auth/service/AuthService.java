@@ -15,11 +15,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final NotificationEmailClient notificationEmailClient;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService,
+                       NotificationEmailClient notificationEmailClient) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.notificationEmailClient = notificationEmailClient;
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -36,7 +39,9 @@ public class AuthService {
                 passwordEncoder.encode(request.getPassword()),
                 Role.LEARNER
         );
+        user.setLastLoginAt(java.time.Instant.now());
         userRepository.save(user);
+        notificationEmailClient.send("WELCOME_EMAIL", user);
 
         String token = jwtService.generateToken(user);
         return new AuthResponse(token, UserResponse.from(user));
@@ -51,8 +56,25 @@ public class AuthService {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "Invalid username/email or password");
         }
 
+        user.setLastLoginAt(java.time.Instant.now());
+        user.setLastInactivityEmailAt(null);
+        userRepository.save(user);
+
         String token = jwtService.generateToken(user);
         return new AuthResponse(token, UserResponse.from(user));
+    }
+
+    public void changePassword(String username, ChangePasswordRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+        }
+        String encoded = passwordEncoder.encode(request.getNewPassword());
+        user.setPassword(encoded);
+        user.setPasswordHash(encoded);
+        userRepository.save(user);
+        notificationEmailClient.send("PASSWORD_CHANGED", user);
     }
 
     public UserResponse getCurrentUser(String username) {

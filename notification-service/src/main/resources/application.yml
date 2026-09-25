@@ -4,6 +4,17 @@ server:
 spring:
   application:
     name: notification-service
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 eureka:
   client:
@@ -12,3 +23,8 @@ eureka:
 
 jwt:
   secret: ${JWT_SECRET:change-this-in-production-please-use-a-long-random-secret}
+
+notification:
+  email:
+    from: ${MAIL_FROM:${MAIL_USERNAME:}}
+  internal-token: ${NOTIFICATION_INTERNAL_TOKEN:change-this-internal-token}

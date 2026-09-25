@@ -1,6 +1,7 @@
 package com.sqlmurdermystery.auth.controller;
 
 import com.sqlmurdermystery.auth.dto.AuthResponse;
+import com.sqlmurdermystery.auth.dto.ChangePasswordRequest;
 import com.sqlmurdermystery.auth.dto.LoginRequest;
 import com.sqlmurdermystery.auth.dto.RegisterRequest;
 import com.sqlmurdermystery.auth.dto.UserResponse;
@@ -29,6 +30,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request, Authentication authentication) {
+        authService.changePassword(authentication.getName(), request);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/me")

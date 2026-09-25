@@ -37,6 +37,12 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 
+    @Column(name = "last_login_at")
+    private Instant lastLoginAt;
+
+    @Column(name = "last_inactivity_email_at")
+    private Instant lastInactivityEmailAt;
+
     public User() {}
 
     public User(String username, String email, String passwordHash, Role role) {
@@ -108,12 +114,11 @@ public class User {
         this.role = role;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Instant getLastLoginAt() { return lastLoginAt; }
+    public void setLastLoginAt(Instant lastLoginAt) { this.lastLoginAt = lastLoginAt; }
+    public Instant getLastInactivityEmailAt() { return lastInactivityEmailAt; }
+    public void setLastInactivityEmailAt(Instant lastInactivityEmailAt) { this.lastInactivityEmailAt = lastInactivityEmailAt; }
 }
 

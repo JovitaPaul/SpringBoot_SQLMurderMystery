@@ -24,3 +24,9 @@ eureka:
 jwt:
   secret: ${JWT_SECRET:change-this-in-production-please-use-a-long-random-secret}
   expiration-ms: 86400000   # 24h
+
+notification:
+  url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8086}
+  internal-token: ${NOTIFICATION_INTERNAL_TOKEN:change-this-internal-token}
+  inactivity-days: ${INACTIVITY_DAYS:7}
+  inactivity-cron: ${INACTIVITY_CRON:0 0 9 * * *}
