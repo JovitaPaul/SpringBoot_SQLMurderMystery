@@ -1,0 +1,162 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: smm-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sql_murder_mystery
+      MYSQL_USER: smm_user
+      MYSQL_PASSWORD: smm_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # Runs once on a FRESH volume: creates the read-only 'smm_readonly' account and
+      # the per-case schemas (case_gallery_theft, case_archive_heist). If you already
+      # have an existing mysql_data volume, run `docker compose down -v` first, or
+      # apply these files by hand.
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+
+  redis:
+    image: redis:7-alpine
+    container_name: smm-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  service-registry:
+    build: ./service-registry
+    container_name: smm-service-registry
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: smm-api-gateway
+    depends_on:
+      - service-registry
+    ports:
+      - "8080:8080"
+    environment:
+      EUREKA_URI: http://service-registry:8761/eureka
+
+  auth-service:
+    build: ./auth-service
+    container_name: smm-auth-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_started
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sql_murder_mystery
+      SPRING_DATASOURCE_USERNAME: smm_user
+      SPRING_DATASOURCE_PASSWORD: smm_pass
+      EUREKA_URI: http://service-registry:8761/eureka
+      JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
+
+  case-content-service:
+    build: ./case-content-service
+    container_name: smm-case-content-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_started
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sql_murder_mystery
+      SPRING_DATASOURCE_USERNAME: smm_user
+      SPRING_DATASOURCE_PASSWORD: smm_pass
+      EUREKA_URI: http://service-registry:8761/eureka
+      JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
+
+  query-execution-service:
+    build: ./query-execution-service
+    container_name: smm-query-execution-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_started
+    ports:
+      - "8083:8083"
+    environment:
+      EUREKA_URI: http://service-registry:8761/eureka
+      JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
+      QUERY_DB_HOST: mysql
+      QUERY_DB_PORT: 3306
+      QUERY_DB_READONLY_USERNAME: smm_readonly
+      QUERY_DB_READONLY_PASSWORD: smm_readonly_pass
+
+  progress-tracking-service:
+    build: ./progress-tracking-service
+    container_name: smm-progress-tracking-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_started
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sql_murder_mystery
+      SPRING_DATASOURCE_USERNAME: smm_user
+      SPRING_DATASOURCE_PASSWORD: smm_pass
+      EUREKA_URI: http://service-registry:8761/eureka
+      JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
+      LEADERBOARD_SERVICE_URL: http://leaderboard-service:8085
+      NOTIFICATION_SERVICE_URL: http://notification-service:8086
+
+  leaderboard-service:
+    build: ./leaderboard-service
+    container_name: smm-leaderboard-service
+    depends_on:
+      redis:
+        condition: service_started
+      service-registry:
+        condition: service_started
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_REDIS_HOST: redis
+      EUREKA_URI: http://service-registry:8761/eureka
+      JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
+
+  notification-service:
+    build: ./notification-service
+    container_name: smm-notification-service
+    depends_on:
+      service-registry:
+        condition: service_started
+    ports:
+      - "8086:8086"
+    environment:
+      EUREKA_URI: http://service-registry:8761/eureka
+      JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_GATEWAY_URL: http://localhost:8080
+    container_name: smm-frontend
+    depends_on:
+      - api-gateway
+    ports:
+      - "5173:80"
+
+volumes:
+  mysql_data:

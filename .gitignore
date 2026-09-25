@@ -1,0 +1,21 @@
+# Java / Maven
+target/
+*.class
+
+# Node
+node_modules/
+dist/
+frontend/.env.local
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+
+# Secrets — never commit real credentials, even though this repo's docker-compose
+# uses placeholder ones for local dev.
+.env
+*.env.local

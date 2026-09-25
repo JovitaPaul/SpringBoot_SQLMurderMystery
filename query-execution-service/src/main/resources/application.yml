@@ -1,0 +1,30 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: query-execution-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+
+# Must match auth-service's jwt.secret — this service validates the same tokens.
+jwt:
+  secret: ${JWT_SECRET:change-this-in-production-please-use-a-long-random-secret}
+
+# This service deliberately does NOT use spring.datasource / JPA: every request names
+# a different case schema, and it connects with a DB-level read-only account rather
+# than the app's normal smm_user. See SqlSafetyValidator + QueryExecutionService.
+query:
+  execution:
+    db-host: ${QUERY_DB_HOST:localhost}
+    db-port: ${QUERY_DB_PORT:3306}
+    readonly-username: ${QUERY_DB_READONLY_USERNAME:smm_readonly}
+    readonly-password: ${QUERY_DB_READONLY_PASSWORD:smm_readonly_pass}
+    # Case schemas are provisioned by mysql-init/*.sql with this prefix; anything else
+    # is rejected before a connection is even attempted.
+    allowed-schema-prefix: ${QUERY_ALLOWED_SCHEMA_PREFIX:case_}
+    timeout-seconds: ${QUERY_TIMEOUT_SECONDS:5}
+    max-rows: ${QUERY_MAX_ROWS:200}

@@ -1,0 +1,14 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: notification-service
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+
+jwt:
+  secret: ${JWT_SECRET:change-this-in-production-please-use-a-long-random-secret}

@@ -1,0 +1,26 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/sql_murder_mystery}
+    username: ${SPRING_DATASOURCE_USERNAME:smm_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:smm_pass}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+
+jwt:
+  secret: ${JWT_SECRET:change-this-in-production-please-use-a-long-random-secret}
+  expiration-ms: 86400000   # 24h

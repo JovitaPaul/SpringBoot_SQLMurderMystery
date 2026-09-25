@@ -1,0 +1,54 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      routes:
+        - id: auth-service
+          uri: http://auth-service:8081
+          predicates:
+            - Path=/api/auth/**
+
+        - id: case-content-service-quizzes
+          uri: http://case-content-service:8082
+          predicates:
+            - Path=/api/quizzes/**
+
+        - id: case-content-service-cases
+          uri: http://case-content-service:8082
+          predicates:
+            - Path=/api/cases/**
+
+        - id: query-execution-service
+          uri: http://query-execution-service:8083
+          predicates:
+            - Path=/api/query/**
+
+        - id: progress-tracking-service
+          uri: http://progress-tracking-service:8084
+          predicates:
+            - Path=/api/progress/**
+
+        - id: leaderboard-service
+          uri: http://leaderboard-service:8085
+          predicates:
+            - Path=/api/leaderboard/**
+
+        - id: notification-service
+          uri: http://notification-service:8086
+          predicates:
+            - Path=/api/notifications/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}

@@ -1,0 +1,29 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: progress-tracking-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/sql_murder_mystery}
+    username: ${SPRING_DATASOURCE_USERNAME:smm_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:smm_pass}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+
+jwt:
+  secret: ${JWT_SECRET:change-this-in-production-please-use-a-long-random-secret}
+
+# Internal service-to-service calls (see ProgressService). If either target is down,
+# these are best-effort: a learner's progress must never be lost just because the
+# leaderboard or notification service happens to be unavailable.
+services:
+  leaderboard-url: ${LEADERBOARD_SERVICE_URL:http://leaderboard-service:8085}
+  notification-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8086}
