@@ -134,10 +134,4 @@ The frontend talks to `http://localhost:8080/api/...` (the gateway) by default â
   repositories and controller signatures, but the business logic is `// TODO` â€” filling
   these in is the next milestone per the project plan's Month 2 timeline.
 
-## Tech stack
 
-Spring Boot 3 / Spring Cloud 2023.x / Spring Security + JJWT / MySQL 8 / Redis /
-Spring Cloud Gateway / Eureka / React 18 + Vite + Tailwind CSS / Docker & docker-compose.
-=======
-# SpringBoot_SQLMurderMystery
->>>>>>> d45d07c1080ac3315b74869d269b909278c12837
