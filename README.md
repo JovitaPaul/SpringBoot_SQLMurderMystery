@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # SQL Murder Mystery — Gamified SQL Learning Platform
 
 Microservices-based implementation of the project proposal (Spring Boot + Spring Cloud +
