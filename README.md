@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SQL Murder Mystery â€” Gamified SQL Learning Platform
 
 Microservices-based implementation of the project proposal (Spring Boot + Spring Cloud +
@@ -137,3 +138,6 @@ The frontend talks to `http://localhost:8080/api/...` (the gateway) by default â
 
 Spring Boot 3 / Spring Cloud 2023.x / Spring Security + JJWT / MySQL 8 / Redis /
 Spring Cloud Gateway / Eureka / React 18 + Vite + Tailwind CSS / Docker & docker-compose.
+=======
+# SpringBoot_SQLMurderMystery
+>>>>>>> d45d07c1080ac3315b74869d269b909278c12837
