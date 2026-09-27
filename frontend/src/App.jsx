@@ -17,7 +17,7 @@ export default function App() {
   const hideNavbar = ['/login', '/register', '/'].includes(location.pathname)
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-radial-fade">
       {!hideNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<Home />} />

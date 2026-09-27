@@ -69,14 +69,30 @@ export default function QuizAttempt() {
     }
   }
 
-  if (loading) return <div className="max-w-2xl mx-auto px-4 py-10 text-parchment/60">Loading quiz...</div>
-  if (error && !quiz) return <div className="max-w-2xl mx-auto px-4 py-10 text-rust">{error}</div>
+  if (loading) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-10 text-parchment/60 flex items-center gap-2">
+        <span className="h-4 w-4 rounded-full border-2 border-brass/30 border-t-brass animate-spin" />
+        Loading quiz...
+      </div>
+    )
+  }
+  if (error && !quiz) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-10 text-rust bg-rust/10 border border-rust/30 rounded-md">
+        {error}
+      </div>
+    )
+  }
   if (!quiz) return null
 
   if (result) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-10">
+      <div className="max-w-2xl mx-auto px-4 py-10 page-shell">
         <div className="card text-center">
+          <div className="text-4xl mb-3" aria-hidden="true">
+            {result.passed ? '🕵️‍♂️' : '🧩'}
+          </div>
           <h1 className="font-display text-3xl text-brass mb-2">
             {result.passed ? 'Case closed — you passed!' : 'Not quite there yet'}
           </h1>
@@ -99,25 +115,31 @@ export default function QuizAttempt() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-2xl mx-auto px-4 py-10 page-shell">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl text-brass">{quiz.topic}</h1>
-        <span className={`font-mono ${secondsLeft <= 10 ? 'text-rust' : 'text-parchment/70'}`}>
-          {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}
+        <span
+          className={`font-mono px-3 py-1 rounded-md border text-sm ${
+            secondsLeft <= 10
+              ? 'text-rust border-rust/40 bg-rust/10 animate-pulse'
+              : 'text-parchment/70 border-brass/20 bg-black/20'
+          }`}
+        >
+          ⏱ {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}
         </span>
       </div>
 
-      {error && <p className="text-rust mb-4">{error}</p>}
+      {error && <p className="text-rust bg-rust/10 border border-rust/30 rounded-md px-3 py-2 mb-4">{error}</p>}
 
       <div className="space-y-6">
         {quiz.questions.map((q, idx) => (
           <div key={q.id} className="card">
             <p className="text-parchment/90 mb-2">
-              <span className="text-brass mr-2">{idx + 1}.</span>
+              <span className="text-brass mr-2 font-display">{idx + 1}.</span>
               {q.questionText}
             </p>
             {q.codeSnippet && (
-              <pre className="bg-black/40 rounded-md p-3 text-sm text-brass/90 overflow-x-auto mb-3">
+              <pre className="bg-black/40 border border-brass/10 rounded-md p-3 text-sm text-brass/90 overflow-x-auto mb-3 font-mono">
                 {q.codeSnippet}
               </pre>
             )}
@@ -134,7 +156,7 @@ export default function QuizAttempt() {
                   <input
                     type="radio"
                     name={`q-${q.id}`}
-                    className="mr-2"
+                    className="mr-2 accent-brass"
                     checked={answers[q.id] === opt.id}
                     onChange={() => selectOption(q.id, opt.id)}
                   />

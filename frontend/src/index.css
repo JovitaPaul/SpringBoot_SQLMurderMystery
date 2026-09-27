@@ -2,22 +2,159 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  min-height: 100vh;
+html {
+  scroll-behavior: smooth;
 }
 
+body {
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #151217;
+  background-image:
+    radial-gradient(ellipse 900px 500px at 50% -10%, rgba(201, 160, 74, 0.13), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 100%, rgba(179, 69, 44, 0.10), transparent 55%),
+    linear-gradient(180deg, #17141a 0%, #121016 45%, #0e0c11 100%);
+  background-attachment: fixed;
+  position: relative;
+}
+
+/* subtle film-grain overlay across the whole app, purely decorative, no assets */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+::selection {
+  background: rgba(201, 160, 74, 0.35);
+  color: #f4ede1;
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0e0c11; }
+::-webkit-scrollbar-thumb { background: rgba(201, 160, 74, 0.35); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(201, 160, 74, 0.55); }
+
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ---------- shared primitives (used across all existing pages) ---------- */
+
 .card {
-  @apply bg-black/20 border border-brass/30 rounded-lg p-6 shadow-lg;
+  @apply relative bg-gradient-to-b from-white/[0.04] to-black/30 backdrop-blur-sm border border-brass/20 rounded-xl p-6 shadow-card transition-all duration-300;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: linear-gradient(90deg, transparent, rgba(201, 160, 74, 0.55), transparent);
+  opacity: 0.7;
+}
+
+a.card:hover, .card.interactive:hover {
+  @apply border-brass/50 -translate-y-0.5 shadow-glow-brass;
 }
 
 .btn-primary {
-  @apply bg-rust hover:bg-rust/80 text-parchment font-semibold px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply relative bg-gradient-to-b from-rust to-blood text-parchment font-semibold px-5 py-2.5 rounded-md
+    tracking-wide transition-all duration-200 shadow-glow-rust
+    hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:brightness-100;
 }
 
 .btn-secondary {
-  @apply bg-transparent border border-brass text-brass hover:bg-brass/10 font-semibold px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-transparent border border-brass/60 text-brass hover:bg-brass/10 hover:border-brass font-semibold
+    px-5 py-2.5 rounded-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0
+    disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0;
 }
 
 .input-field {
-  @apply w-full bg-black/30 border border-brass/40 rounded-md px-3 py-2 text-parchment placeholder-parchment/40 focus:outline-none focus:border-brass;
+  @apply w-full bg-black/35 border border-brass/30 rounded-md px-3 py-2.5 text-parchment placeholder-parchment/35
+    transition-colors duration-200 focus:outline-none focus:border-brass focus:ring-2 focus:ring-brass/20;
+}
+
+/* ---------- new decorative helpers, used only for layout/visuals ---------- */
+
+.page-shell {
+  @apply relative z-10 animate-fadeIn;
+}
+
+.eyebrow {
+  @apply inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.25em] text-brass/70 font-semibold mb-3;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 22px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+.stat-tile {
+  @apply card text-center py-5;
+}
+
+.divider-dashed {
+  @apply border-t border-dashed border-brass/20 my-6;
+}
+
+.pill {
+  @apply inline-block text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border;
+}
+
+.glass-nav {
+  @apply bg-ink-deep/70 backdrop-blur-md border-b border-brass/20;
+}
+
+.auth-shell {
+  @apply min-h-screen flex items-center justify-center px-4 relative overflow-hidden;
+}
+
+/* full-bleed photo background used behind a page, with a dark noir overlay
+   so text stays readable on top of it. Apply bg-photo-* alongside this. */
+.photo-shell {
+  @apply relative bg-cover bg-center bg-fixed;
+}
+
+.photo-overlay {
+  @apply absolute inset-0 bg-gradient-to-b from-ink-deep/90 via-ink/90 to-ink-deep/95;
+}
+
+.floating-dot {
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(201, 160, 74, 0.35);
+  animation: drift 10s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.table-noir {
+  @apply w-full text-sm border-collapse;
+}
+.table-noir thead tr {
+  @apply border-b border-brass/30 text-brass text-left;
+}
+.table-noir th {
+  @apply py-2 pr-4 font-semibold uppercase text-xs tracking-wider;
+}
+.table-noir tbody tr {
+  @apply border-b border-brass/10 hover:bg-white/[0.03] transition-colors;
+}
+.table-noir td {
+  @apply py-2 pr-4 text-parchment/80;
 }

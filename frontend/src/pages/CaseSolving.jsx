@@ -60,21 +60,39 @@ export default function CaseSolving() {
     }
   }
 
-  if (loadError) return <div className="max-w-4xl mx-auto px-4 py-10 text-rust">{loadError}</div>
-  if (!caseData) return <div className="max-w-4xl mx-auto px-4 py-10 text-parchment/60">Loading case file...</div>
+  if (loadError) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-10 text-rust bg-rust/10 border border-rust/30 rounded-md">
+        {loadError}
+      </div>
+    )
+  }
+  if (!caseData) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-10 text-parchment/60 flex items-center gap-2">
+        <span className="h-4 w-4 rounded-full border-2 border-brass/30 border-t-brass animate-spin" />
+        Loading case file...
+      </div>
+    )
+  }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
+    <div className="min-h-screen photo-shell bg-photo-schema">
+      <div className="photo-overlay" />
+      <div className="max-w-4xl mx-auto px-4 py-10 space-y-6 page-shell relative z-10">
       <div className="card">
+        <p className="eyebrow">Briefing</p>
         <h1 className="font-display text-3xl text-brass mb-2">{caseData.title}</h1>
         <p className="text-parchment/80 leading-relaxed whitespace-pre-line">{caseData.briefing}</p>
         <p className="text-xs text-parchment/40 mt-3">
-          Querying schema: <span className="font-mono">{caseData.targetSchema}</span>
+          Querying schema: <span className="font-mono text-brass/80">{caseData.targetSchema}</span>
         </p>
       </div>
 
       <div className="card">
-        <h2 className="font-display text-lg text-brass mb-3">Query editor</h2>
+        <h2 className="font-display text-lg text-brass mb-3 flex items-center gap-2">
+          <span aria-hidden="true">🧾</span> Query editor
+        </h2>
         <textarea
           className="input-field font-mono text-sm h-32 resize-y"
           value={sql}
@@ -82,10 +100,14 @@ export default function CaseSolving() {
           spellCheck={false}
         />
         <button className="btn-primary mt-3" onClick={runQuery} disabled={running || !sql.trim()}>
-          {running ? 'Running...' : 'Run query'}
+          {running ? 'Running...' : '▶ Run query'}
         </button>
 
-        {queryError && <p className="text-rust text-sm mt-3">{queryError}</p>}
+        {queryError && (
+          <p className="text-rust text-sm mt-3 bg-rust/10 border border-rust/30 rounded-md px-3 py-2">
+            {queryError}
+          </p>
+        )}
 
         {queryResult && (
           <div className="mt-4 overflow-x-auto">
@@ -93,19 +115,19 @@ export default function CaseSolving() {
               {queryResult.rowCount} row{queryResult.rowCount === 1 ? '' : 's'} · {queryResult.executionTimeMs}ms
               {queryResult.truncated && ' · results truncated'}
             </p>
-            <table className="w-full text-sm border-collapse">
+            <table className="table-noir">
               <thead>
-                <tr className="border-b border-brass/30 text-brass text-left">
+                <tr>
                   {queryResult.columns.map((col) => (
-                    <th key={col} className="py-2 pr-4 font-normal">{col}</th>
+                    <th key={col}>{col}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {queryResult.rows.map((row, i) => (
-                  <tr key={i} className="border-b border-brass/10">
+                  <tr key={i}>
                     {row.map((cell, j) => (
-                      <td key={j} className="py-2 pr-4 text-parchment/80">
+                      <td key={j}>
                         {cell === null ? <span className="text-parchment/30">NULL</span> : String(cell)}
                       </td>
                     ))}
@@ -118,7 +140,9 @@ export default function CaseSolving() {
       </div>
 
       <div className="card">
-        <h2 className="font-display text-lg text-brass mb-3">Make your accusation</h2>
+        <h2 className="font-display text-lg text-brass mb-3 flex items-center gap-2">
+          <span aria-hidden="true">⚖️</span> Make your accusation
+        </h2>
 
         {accusationResult ? (
           <div>
@@ -166,12 +190,17 @@ export default function CaseSolving() {
                 onChange={(e) => setReasoning(e.target.value)}
               />
             </div>
-            {accusationError && <p className="text-rust text-sm">{accusationError}</p>}
+            {accusationError && (
+              <p className="text-rust text-sm bg-rust/10 border border-rust/30 rounded-md px-3 py-2">
+                {accusationError}
+              </p>
+            )}
             <button type="submit" className="btn-primary" disabled={accusing}>
               {accusing ? 'Submitting...' : 'Accuse'}
             </button>
           </form>
         )}
+      </div>
       </div>
     </div>
   )
