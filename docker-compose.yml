@@ -86,8 +86,11 @@ services:
     build: ./query-execution-service
     container_name: smm-query-execution-service
     depends_on:
+<<<<<<< Updated upstream
       mysql:
         condition: service_healthy
+=======
+>>>>>>> Stashed changes
       service-registry:
         condition: service_started
     ports:
@@ -95,10 +98,10 @@ services:
     environment:
       EUREKA_URI: http://service-registry:8761/eureka
       JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
-      QUERY_DB_HOST: mysql
-      QUERY_DB_PORT: 3306
-      QUERY_DB_READONLY_USERNAME: smm_readonly
-      QUERY_DB_READONLY_PASSWORD: smm_readonly_pass
+      QUERY_DB_HOST: mysql-1e392661-nitk-390.i.aivencloud.com
+      QUERY_DB_PORT: 12751
+      QUERY_DB_READONLY_USERNAME: ${AIVEN_MYSQL_USERNAME}
+      QUERY_DB_READONLY_PASSWORD: ${AIVEN_MYSQL_PASSWORD}
 
   progress-tracking-service:
     build: ./progress-tracking-service

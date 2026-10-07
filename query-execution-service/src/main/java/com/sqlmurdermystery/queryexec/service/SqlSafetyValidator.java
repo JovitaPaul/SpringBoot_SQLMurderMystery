@@ -92,14 +92,16 @@ public class SqlSafetyValidator {
 
     /** Only schemas seeded for case-solving (e.g. "case_gallery_theft") may be queried. */
     public void validateSchemaName(String schemaName) {
-        if (schemaName == null || !schemaName.matches("^[a-zA-Z0-9_]{1,64}$")) {
-            throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid targetSchema.");
-        }
-        if (!schemaName.startsWith(properties.getAllowedSchemaPrefix())) {
-            throw new ApiException(HttpStatus.FORBIDDEN,
-                    "targetSchema must be a case schema (prefix '" + properties.getAllowedSchemaPrefix() + "').");
-        }
+    if (schemaName == null || !schemaName.matches("^[a-zA-Z0-9_]{1,64}$")) {
+        throw new ApiException(HttpStatus.BAD_REQUEST, "Invalid targetSchema.");
     }
+
+    if (!schemaName.startsWith(properties.getAllowedSchemaPrefix())
+            && !schemaName.equals("defaultdb")) {
+        throw new ApiException(HttpStatus.FORBIDDEN,
+                "targetSchema must be a case schema or defaultdb.");
+    }
+}
 
     private boolean containsWord(String haystackUpper, String wordUpper) {
         return Pattern.compile("\\b" + Pattern.quote(wordUpper) + "\\b").matcher(haystackUpper).find();
