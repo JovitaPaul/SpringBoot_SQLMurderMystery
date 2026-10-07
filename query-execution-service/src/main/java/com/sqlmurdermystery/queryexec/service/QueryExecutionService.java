@@ -4,6 +4,8 @@ import com.sqlmurdermystery.queryexec.config.QueryExecutionProperties;
 import com.sqlmurdermystery.queryexec.dto.QueryRequest;
 import com.sqlmurdermystery.queryexec.dto.QueryResultDto;
 import com.sqlmurdermystery.queryexec.exception.ApiException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,8 @@ import java.util.List;
 
 @Service
 public class QueryExecutionService {
+
+    private static final Logger log = LoggerFactory.getLogger(QueryExecutionService.class);
 
     private final QueryExecutionProperties properties;
     private final SqlSafetyValidator safetyValidator;
@@ -28,7 +32,12 @@ public class QueryExecutionService {
 
         String jdbcUrl = "jdbc:mysql://" + properties.getDbHost() + ":" + properties.getDbPort()
                 + "/" + request.getTargetSchema()
-                + "?useSSL=false&allowMultiQueries=false&connectTimeout=3000&socketTimeout="
+                // allowPublicKeyRetrieval=true is REQUIRED here: MySQL 8 users default to the
+                // caching_sha2_password plugin, and with useSSL=false the driver refuses to
+                // fetch the server's RSA key ("Public Key Retrieval is not allowed") unless
+                // this flag is set. Safe for the internal docker network this runs on.
+                + "?useSSL=false&allowPublicKeyRetrieval=true&allowMultiQueries=false"
+                + "&connectTimeout=3000&socketTimeout="
                 + (properties.getTimeoutSeconds() * 1000 + 2000);
 
         long start = System.currentTimeMillis();
@@ -55,6 +64,11 @@ public class QueryExecutionService {
                     "Query took longer than " + properties.getTimeoutSeconds() + "s and was cancelled. "
                             + "Try narrowing it down (add a WHERE clause, fewer JOINs, etc.).");
         } catch (SQLNonTransientConnectionException | SQLTransientConnectionException e) {
+            // Log the real cause (bad host/port, wrong password, missing schema...) -
+            // the learner only sees the friendly message below.
+            log.error("Could not connect to case database {} at {}:{} as {}: {}",
+                    request.getTargetSchema(), properties.getDbHost(), properties.getDbPort(),
+                    properties.getReadonlyUsername(), e.getMessage());
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE,
                     "Could not reach the case database right now — please try again.");
         }

@@ -1,3 +1,6 @@
+-- CHANGED: DROP first so this script can be re-run safely (the case schemas are
+-- read-only for learners, so recreating them loses nothing).
+DROP DATABASE IF EXISTS case_gallery_theft;
 CREATE DATABASE IF NOT EXISTS case_gallery_theft;
 USE case_gallery_theft;
 

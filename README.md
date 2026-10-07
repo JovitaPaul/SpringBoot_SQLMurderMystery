@@ -30,6 +30,16 @@ Then open http://localhost:5173. First run only: `mysql-init/` scripts execute
 automatically on a fresh MySQL volume; if you've run this before with an older volume,
 `docker compose down -v` first or the two demo case schemas won't exist.
 
+### Troubleshooting: "queries don't run"
+
+- `docker compose up --build` now starts a one-shot `mysql-bootstrap` container that
+  (re)creates the `smm_readonly` account and both case schemas on every start, so you no
+  longer need `docker compose down -v` for an old volume.
+- Check `docker logs smm-query-execution-service` — connection problems are logged with
+  the real cause. Check `docker logs smm-mysql-bootstrap` — it should end with
+  "Case databases ready."
+- Verify by hand: `docker exec -it smm-mysql mysql -usmm_readonly -psmm_readonly_pass case_gallery_theft -e "select * from person"`
+
 ### How a learner's progress actually gets recorded
 
 There's no message broker in this stack (docker-compose only provisions MySQL + Redis),

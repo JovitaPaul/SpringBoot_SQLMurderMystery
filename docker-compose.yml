@@ -20,11 +20,30 @@ services:
       # apply these files by hand.
       - ./mysql-init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      # CHANGED: ping over TCP (127.0.0.1) with credentials. With "-h localhost" the check
+      # talks over the unix socket and goes green while the image's temporary init server
+      # is still running the mysql-init scripts, so dependants started too early.
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 90s
+
+  # CHANGED (new service): re-applies mysql-init/*.sql on EVERY `docker compose up`.
+  # docker-entrypoint-initdb.d only runs on a brand-new volume, so if you had an older
+  # mysql_data volume the case schemas / smm_readonly account never existed and every
+  # query failed. The scripts are idempotent, so running them again is harmless.
+  mysql-bootstrap:
+    image: mysql:8.0
+    container_name: smm-mysql-bootstrap
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./mysql-init:/sql:ro
+    restart: "no"
+    command: >
+      sh -c "for f in /sql/*.sql; do echo \"Applying $$f\"; mysql -hmysql -uroot -proot < $$f || exit 1; done; echo 'Case databases ready.'"
 
   redis:
     image: redis:7-alpine
@@ -88,6 +107,9 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      # CHANGED: wait until the case schemas + smm_readonly user are guaranteed to exist.
+      mysql-bootstrap:
+        condition: service_completed_successfully
       service-registry:
         condition: service_started
     ports:
