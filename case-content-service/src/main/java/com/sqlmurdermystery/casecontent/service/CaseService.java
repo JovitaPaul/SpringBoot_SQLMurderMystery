@@ -7,20 +7,27 @@ import com.sqlmurdermystery.casecontent.dto.CaseSummaryDto;
 import com.sqlmurdermystery.casecontent.model.CaseFile;
 import com.sqlmurdermystery.casecontent.repository.CaseFileRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CaseService {
 
     private static final int PREVIEW_LENGTH = 160;
 
-    private final CaseFileRepository caseFileRepository;
+    /** The `solution` table has no per-case points column, so every case awards the same. */
+    private static final int POINTS_PER_CASE = 100;
 
-    public CaseService(CaseFileRepository caseFileRepository) {
+    private final CaseFileRepository caseFileRepository;
+    private final JdbcTemplate jdbcTemplate;
+
+    public CaseService(CaseFileRepository caseFileRepository, JdbcTemplate jdbcTemplate) {
         this.caseFileRepository = caseFileRepository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     @Transactional(readOnly = true)
@@ -50,23 +57,34 @@ public class CaseService {
     }
 
     /**
-     * Grades an accusation. This is a pure check against {@link CaseFile#getSolutionSuspectId()}
-     * — it does not persist anything or record progress. The caller (frontend) is
-     * expected to call progress-tracking-service's completion endpoint once it sees
-     * {@code correct == true}, so a learner's progress lives in exactly one place.
+     * Grades an accusation against the `solution` table (case_id, culprit_person_id,
+     * motive, key_evidence) in this service's own database. The caseId is the
+     * crime_scene_report.case_id the learner opened. Nothing is persisted here; the
+     * frontend records progress once it sees {@code correct == true}.
      */
     @Transactional(readOnly = true)
     public AccusationResultDto submitAccusation(Long caseId, AccusationRequest request) {
-        CaseFile caseFile = findOrThrow(caseId);
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                "SELECT culprit_person_id, motive, key_evidence FROM solution WHERE case_id = ?",
+                caseId);
 
-        boolean correct = caseFile.getSolutionSuspectId().equals(request.getSuspectId());
+        if (rows.isEmpty()) {
+            throw new EntityNotFoundException("No solution on file for case " + caseId);
+        }
+
+        Map<String, Object> solution = rows.get(0);
+        Number culprit = (Number) solution.get("culprit_person_id");
+
+        boolean correct = culprit != null
+                && request.getSuspectId() != null
+                && culprit.intValue() == request.getSuspectId();
 
         if (correct) {
             return new AccusationResultDto(
                     true,
                     "Case closed! Your query-writing cracked it.",
-                    caseFile.getSolutionExplanation(),
-                    caseFile.getPointsReward()
+                    explanation((String) solution.get("motive"), (String) solution.get("key_evidence")),
+                    POINTS_PER_CASE
             );
         }
 
@@ -76,6 +94,16 @@ public class CaseService {
                 null,
                 null
         );
+    }
+
+    private String explanation(String motive, String keyEvidence) {
+        StringBuilder sb = new StringBuilder();
+        if (motive != null && !motive.isBlank()) sb.append("Motive: ").append(motive.trim());
+        if (keyEvidence != null && !keyEvidence.isBlank()) {
+            if (sb.length() > 0) sb.append("\n");
+            sb.append("Key evidence: ").append(keyEvidence.trim());
+        }
+        return sb.toString();
     }
 
     private CaseFile findOrThrow(Long caseId) {

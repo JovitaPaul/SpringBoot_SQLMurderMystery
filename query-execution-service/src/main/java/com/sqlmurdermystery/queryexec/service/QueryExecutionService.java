@@ -28,7 +28,7 @@ public class QueryExecutionService {
 
         String jdbcUrl = "jdbc:mysql://" + properties.getDbHost() + ":" + properties.getDbPort()
                 + "/" + request.getTargetSchema()
-                + "?useSSL=false&allowMultiQueries=false&connectTimeout=3000&socketTimeout="
+                + "?sslMode=REQUIRED&allowMultiQueries=false&connectTimeout=10000&socketTimeout="
                 + (properties.getTimeoutSeconds() * 1000 + 2000);
 
         long start = System.currentTimeMillis();

@@ -1,24 +1,10 @@
-
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { executeQuery } from '../api/queryApi'
 import { extractErrorMessage } from '../api/client'
 
-<<<<<<< Updated upstream
-const difficultyColor = {
-  BEGINNER: 'text-green-400',
-  INTERMEDIATE: 'text-brass',
-  ADVANCED: 'text-rust',
-}
-=======
 const CASE_SCHEMA = 'defaultdb'
-
-const REPORT_SQL = `
-  SELECT case_id, date, type, city, description
-  FROM crime_scene_report
-  ORDER BY date, case_id
-`
->>>>>>> Stashed changes
+const PAGE_SIZE = 12
 
 export default function CaseList() {
   const [reports, setReports] = useState([])
@@ -26,117 +12,47 @@ export default function CaseList() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
-  const [expanded, setExpanded] = useState({})
+  const [visible, setVisible] = useState(PAGE_SIZE)
 
   useEffect(() => {
-    let cancelled = false
-
-    async function loadReports() {
-      try {
-        setLoading(true)
-        setError('')
-
-        const res = await executeQuery(CASE_SCHEMA, REPORT_SQL)
-
-        if (cancelled) return
-
-        const columns = res.columns.map((c) => String(c).toLowerCase())
-
-        const getValue = (row, name) => {
-          const index = columns.indexOf(name)
-          return index === -1 ? null : row[index]
+    executeQuery(CASE_SCHEMA, 'SELECT * FROM crime_scene_report ORDER BY case_id')
+      .then((res) => {
+        const cols = res.columns.map((c) => String(c).toLowerCase())
+        const get = (row, name) => {
+          const i = cols.indexOf(name)
+          return i === -1 ? null : row[i]
         }
-
-        const mapped = res.rows.map((row, index) => ({
-          key: `${CASE_SCHEMA}-${getValue(row, 'case_id') ?? index}`,
-          caseId: getValue(row, 'case_id'),
-          date: getValue(row, 'date'),
-          type: getValue(row, 'type'),
-          city: getValue(row, 'city'),
-          description: getValue(row, 'description'),
-        }))
-
-        setReports(mapped)
-        setTruncated(Boolean(res.truncated))
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            extractErrorMessage(
-              err,
-              'Could not load crime scene reports.'
-            )
-          )
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    loadReports()
-
-    return () => {
-      cancelled = true
-    }
+        setTruncated(!!res.truncated)
+        setReports(
+          res.rows.map((row) => ({
+            caseId: get(row, 'case_id'),
+            date: get(row, 'date'),
+            type: get(row, 'type'),
+            city: get(row, 'city'),
+            description: get(row, 'description') || '',
+          }))
+        )
+      })
+      .catch((err) => setError(extractErrorMessage(err, 'Could not load crime scene reports.')))
+      .finally(() => setLoading(false))
   }, [])
 
   const filtered = useMemo(() => {
     const f = filter.trim().toLowerCase()
-
     if (!f) return reports
-
     return reports.filter((r) =>
-      [
-        r.caseId,
-        r.date,
-        r.type,
-        r.city,
-        r.description,
-      ].some((value) =>
-        String(value ?? '').toLowerCase().includes(f)
+      [r.caseId, r.date, r.type, r.city, r.description].some((v) =>
+        String(v ?? '').toLowerCase().includes(f)
       )
     )
   }, [reports, filter])
 
   return (
-<<<<<<< Updated upstream
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <h1 className="font-display text-3xl text-brass mb-1">Case-Solving Phase</h1>
-      <p className="text-parchment/60 mb-8">
-        Query real mystery databases, follow the evidence, and accuse the culprit.
-      </p>
-
-      {loading && <p className="text-parchment/60">Loading cases...</p>}
-      {error && <p className="text-rust">{error}</p>}
-
-      <div className="space-y-3">
-        {cases.map((c) => (
-          <Link
-            key={c.id}
-            to={`/cases/${c.id}`}
-            className="card block hover:border-brass transition-colors"
-          >
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="font-display text-lg text-brass">{c.title}</h3>
-              <span className={`text-sm ${difficultyColor[c.difficulty] || 'text-parchment'}`}>
-                {c.difficulty}
-              </span>
-            </div>
-            <p className="text-parchment/60 text-sm mb-2">{c.briefingPreview}</p>
-            <p className="text-brass text-sm">{c.pointsReward} points</p>
-          </Link>
-        ))}
-=======
     <div className="min-h-screen photo-shell bg-photo-schema">
       <div className="photo-overlay" />
-
       <div className="max-w-3xl mx-auto px-4 py-10 page-shell relative z-10">
-
         <p className="eyebrow">Open investigations</p>
-
-        <h1 className="font-display text-3xl text-brass mb-1">
-          Case-Solving Phase
-        </h1>
-
+        <h1 className="font-display text-3xl text-brass mb-1">Case-Solving Phase</h1>
         <p className="text-parchment/60 mb-6">
           Read the crime scene reports, follow the evidence, and accuse the culprit.
         </p>
@@ -147,104 +63,66 @@ export default function CaseList() {
             Loading reports...
           </p>
         )}
-
         {error && (
           <p className="text-rust text-sm bg-rust/10 border border-rust/30 rounded-md px-3 py-2 mb-3">
             {error}
           </p>
         )}
 
-        {!loading && reports.length > 0 && (
+        {reports.length > 0 && (
           <>
             <input
               type="text"
               className="input-field mb-2"
-              placeholder="Filter by case ID, type, city, date or keyword"
+              placeholder="Filter by type, city, date or keyword"
               value={filter}
               onChange={(e) => {
                 setFilter(e.target.value)
+                setVisible(PAGE_SIZE)
               }}
             />
-
             <p className="text-xs text-parchment/40 mb-3">
-              Showing {filtered.length} of {reports.length} cases
+              Showing {Math.min(visible, filtered.length)} of {filtered.length} reports
               {truncated && ' · list truncated by the query service'}
             </p>
 
             <div className="space-y-3">
-              {filtered.map((r) => {
-                const open = expanded[r.key]
-                const text = r.description || ''
-                const long = text.length > 180
-
-                return (
-                  <div key={r.key} className="card">
-
-                    <div className="flex items-center justify-between gap-3 mb-1">
-                      <h3 className="font-display text-lg text-brass flex items-center gap-2">
-                        <span aria-hidden="true">🔎</span>
-                        {r.type || 'Crime scene report'}
-                      </h3>
-
-                      {r.caseId != null && (
-                        <span className="pill shrink-0 text-parchment/70 border-parchment/30">
-                          Case #{r.caseId}
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="text-xs text-parchment/40 mb-2">
-                      {r.date
-                        ? String(r.date).slice(0, 10)
-                        : 'Unknown date'}
-
-                      {r.city ? ` · ${r.city}` : ''}
-                    </p>
-
-                    <p className="text-parchment/70 text-sm whitespace-pre-line">
-                      {open || !long
-                        ? text
-                        : `${text.slice(0, 180)}...`}
-                    </p>
-
-                    <div className="flex items-center gap-4 mt-3">
-
-                      {long && (
-                        <button
-                          className="text-sm text-brass hover:underline"
-                          onClick={() =>
-                            setExpanded((previous) => ({
-                              ...previous,
-                              [r.key]: !open,
-                            }))
-                          }
-                        >
-                          {open ? 'Show less' : 'Read more'}
-                        </button>
-                      )}
-
-                      <Link
-                        to={`/cases/${r.caseId}`}
-                        className="text-sm text-brass hover:underline"
-                      >
-                        Investigate →
-                      </Link>
-
-                    </div>
+              {filtered.slice(0, visible).map((r) => (
+                <Link key={r.caseId} to={`/cases/${r.caseId}`} className="card interactive block">
+                  <div className="flex items-center justify-between gap-3 mb-1">
+                    <h3 className="font-display text-lg text-brass flex items-center gap-2">
+                      <span aria-hidden="true">🔎</span>
+                      {r.type || 'Crime scene report'}
+                    </h3>
+                    <span className="pill shrink-0 text-parchment/70 border-parchment/30">
+                      #{r.caseId}
+                    </span>
                   </div>
-                )
-              })}
+                  <p className="text-xs text-parchment/40 mb-2">
+                    {r.date ? String(r.date).slice(0, 10) : 'Unknown date'}
+                    {r.city ? ` · ${r.city}` : ''}
+                  </p>
+                  <p className="text-parchment/70 text-sm">
+                    {r.description.length > 180 ? `${r.description.slice(0, 180)}...` : r.description}
+                  </p>
+                </Link>
+              ))}
             </div>
+
+            {visible < filtered.length && (
+              <button
+                className="btn-secondary w-full mt-4"
+                onClick={() => setVisible((v) => v + PAGE_SIZE)}
+              >
+                Show more
+              </button>
+            )}
           </>
         )}
 
         {!loading && !error && reports.length === 0 && (
-          <p className="text-parchment/50 text-sm">
-            No crime scene reports found.
-          </p>
+          <p className="text-parchment/50 text-sm">No crime scene reports found.</p>
         )}
-
->>>>>>> Stashed changes
       </div>
     </div>
   )

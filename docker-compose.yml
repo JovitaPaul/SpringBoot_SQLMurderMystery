@@ -86,11 +86,6 @@ services:
     build: ./query-execution-service
     container_name: smm-query-execution-service
     depends_on:
-<<<<<<< Updated upstream
-      mysql:
-        condition: service_healthy
-=======
->>>>>>> Stashed changes
       service-registry:
         condition: service_started
     ports:
@@ -100,27 +95,9 @@ services:
       JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
       QUERY_DB_HOST: mysql-1e392661-nitk-390.i.aivencloud.com
       QUERY_DB_PORT: 12751
-      QUERY_DB_READONLY_USERNAME: ${AIVEN_MYSQL_USERNAME}
-      QUERY_DB_READONLY_PASSWORD: ${AIVEN_MYSQL_PASSWORD}
-
-  progress-tracking-service:
-    build: ./progress-tracking-service
-    container_name: smm-progress-tracking-service
-    depends_on:
-      mysql:
-        condition: service_healthy
-      service-registry:
-        condition: service_started
-    ports:
-      - "8084:8084"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sql_murder_mystery
-      SPRING_DATASOURCE_USERNAME: smm_user
-      SPRING_DATASOURCE_PASSWORD: smm_pass
-      EUREKA_URI: http://service-registry:8761/eureka
-      JWT_SECRET: change-this-in-production-please-use-a-long-random-secret
-      LEADERBOARD_SERVICE_URL: http://leaderboard-service:8085
-      NOTIFICATION_SERVICE_URL: http://notification-service:8086
+      QUERY_DB_READONLY_USERNAME: smm_readonly
+      QUERY_DB_READONLY_PASSWORD: ${QUERY_DB_READONLY_PASSWORD}
+      QUERY_ALLOWED_SCHEMA_PREFIX: case_
 
   leaderboard-service:
     build: ./leaderboard-service
