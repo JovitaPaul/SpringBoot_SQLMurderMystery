@@ -9,9 +9,6 @@
 -- "enforcing read-only access... through careful service design" defense the proposal
 -- calls for — belt (query validation) and suspenders (DB grants).
 CREATE USER IF NOT EXISTS 'smm_readonly'@'%' IDENTIFIED BY 'smm_readonly_pass';
-<<<<<<< Updated upstream
-=======
 ALTER USER 'smm_readonly'@'%' IDENTIFIED BY 'smm_readonly_pass';
 -- GRANT SELECT ON defaultdb.crime_scene_report TO 'smm_readonly'@'%';
 FLUSH PRIVILEGES;
->>>>>>> Stashed changes

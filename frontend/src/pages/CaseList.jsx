@@ -4,13 +4,6 @@ import { Link } from 'react-router-dom'
 import { executeQuery } from '../api/queryApi'
 import { extractErrorMessage } from '../api/client'
 
-<<<<<<< Updated upstream
-const difficultyColor = {
-  BEGINNER: 'text-green-400',
-  INTERMEDIATE: 'text-brass',
-  ADVANCED: 'text-rust',
-}
-=======
 const CASE_SCHEMA = 'defaultdb'
 
 const REPORT_SQL = `
@@ -18,7 +11,6 @@ const REPORT_SQL = `
   FROM crime_scene_report
   ORDER BY date, case_id
 `
->>>>>>> Stashed changes
 
 export default function CaseList() {
   const [reports, setReports] = useState([])
@@ -98,34 +90,6 @@ export default function CaseList() {
   }, [reports, filter])
 
   return (
-<<<<<<< Updated upstream
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      <h1 className="font-display text-3xl text-brass mb-1">Case-Solving Phase</h1>
-      <p className="text-parchment/60 mb-8">
-        Query real mystery databases, follow the evidence, and accuse the culprit.
-      </p>
-
-      {loading && <p className="text-parchment/60">Loading cases...</p>}
-      {error && <p className="text-rust">{error}</p>}
-
-      <div className="space-y-3">
-        {cases.map((c) => (
-          <Link
-            key={c.id}
-            to={`/cases/${c.id}`}
-            className="card block hover:border-brass transition-colors"
-          >
-            <div className="flex items-center justify-between mb-1">
-              <h3 className="font-display text-lg text-brass">{c.title}</h3>
-              <span className={`text-sm ${difficultyColor[c.difficulty] || 'text-parchment'}`}>
-                {c.difficulty}
-              </span>
-            </div>
-            <p className="text-parchment/60 text-sm mb-2">{c.briefingPreview}</p>
-            <p className="text-brass text-sm">{c.pointsReward} points</p>
-          </Link>
-        ))}
-=======
     <div className="min-h-screen photo-shell bg-photo-schema">
       <div className="photo-overlay" />
 
@@ -244,7 +208,6 @@ export default function CaseList() {
           </p>
         )}
 
->>>>>>> Stashed changes
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 package com.sqlmurdermystery.progress.dto;
 
 import com.sqlmurdermystery.progress.model.ActivityType;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -16,6 +17,7 @@ public class RecordCompletionRequest {
 
     @NotNull(message = "points is required")
     @Positive(message = "points must be positive")
+    @Max(value = 1000, message = "points must be at most 1000")
     private Integer points;
 
     public RecordCompletionRequest() {}

@@ -27,3 +27,7 @@ jwt:
 services:
   leaderboard-url: ${LEADERBOARD_SERVICE_URL:http://leaderboard-service:8085}
   notification-url: ${NOTIFICATION_SERVICE_URL:http://notification-service:8086}
+
+# Streak days roll over at midnight in this zone (containers run in UTC by default).
+progress:
+  zone-id: ${PROGRESS_ZONE_ID:Asia/Kolkata}

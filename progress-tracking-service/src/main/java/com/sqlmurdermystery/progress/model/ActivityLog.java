@@ -5,7 +5,10 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "activity_log")
+@Table(name = "activity_log",
+       uniqueConstraints = @UniqueConstraint(
+               name = "uk_activity_user_type_ref",
+               columnNames = {"username", "type", "reference_id"}))
 public class ActivityLog {
 
     @Id

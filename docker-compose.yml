@@ -86,11 +86,6 @@ services:
     build: ./query-execution-service
     container_name: smm-query-execution-service
     depends_on:
-<<<<<<< Updated upstream
-      mysql:
-        condition: service_healthy
-=======
->>>>>>> Stashed changes
       service-registry:
         condition: service_started
     ports:

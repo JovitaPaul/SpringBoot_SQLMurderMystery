@@ -238,10 +238,6 @@ export default function QuizAttempt() {
     }
   }
 
-<<<<<<< Updated upstream
-  if (loading) return <div className="max-w-2xl mx-auto px-4 py-10 text-parchment/60">Loading quiz...</div>
-  if (error && !quiz) return <div className="max-w-2xl mx-auto px-4 py-10 text-rust">{error}</div>
-=======
   // Finds the per-question breakdown list in the response by its shape,
   // so it works whatever the backend names that field.
   const getCorrectOptionId = (q) => {
@@ -268,7 +264,6 @@ export default function QuizAttempt() {
       </div>
     )
   }
->>>>>>> Stashed changes
   if (!quiz) return null
 
   // ---------- START SCREEN ----------
@@ -276,8 +271,6 @@ export default function QuizAttempt() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-10">
         <div className="card text-center">
-<<<<<<< Updated upstream
-=======
           <h1 className="font-display text-3xl text-brass mb-2">{quiz.topic}</h1>
           <p className="text-parchment/70 mb-1">{quiz.questions.length} questions</p>
           <p className="text-parchment/50 text-sm mb-6">
@@ -299,7 +292,6 @@ export default function QuizAttempt() {
           <div className="text-4xl mb-3" aria-hidden="true">
             {result.passed ? '🕵️‍♂️' : '🧩'}
           </div>
->>>>>>> Stashed changes
           <h1 className="font-display text-3xl text-brass mb-2">
             {result.passed ? 'Case closed — you passed!' : 'Not quite there yet'}
           </h1>
@@ -373,14 +365,6 @@ export default function QuizAttempt() {
     <div className="max-w-2xl mx-auto px-4 py-10">
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-display text-2xl text-brass">{quiz.topic}</h1>
-<<<<<<< Updated upstream
-        <span className={`font-mono ${secondsLeft <= 10 ? 'text-rust' : 'text-parchment/70'}`}>
-          {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}
-        </span>
-      </div>
-
-      {error && <p className="text-rust mb-4">{error}</p>}
-=======
         <span className="font-mono px-3 py-1 rounded-md border text-sm text-parchment/70 border-brass/20 bg-black/20">
           ⏱ {formatTime(elapsed)}
         </span>
@@ -391,7 +375,6 @@ export default function QuizAttempt() {
           {error}
         </p>
       )}
->>>>>>> Stashed changes
 
       <div className="space-y-6">
         {quiz.questions.map((q, idx) => (

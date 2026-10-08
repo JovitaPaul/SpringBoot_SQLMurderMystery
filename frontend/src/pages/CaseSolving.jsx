@@ -144,34 +144,6 @@ export default function CaseSolving() {
     }
   }
 
-<<<<<<< Updated upstream
-  if (loadError) return <div className="max-w-4xl mx-auto px-4 py-10 text-rust">{loadError}</div>
-  if (!caseData) return <div className="max-w-4xl mx-auto px-4 py-10 text-parchment/60">Loading case file...</div>
-
-  return (
-    <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
-      <div className="card">
-        <h1 className="font-display text-3xl text-brass mb-2">{caseData.title}</h1>
-        <p className="text-parchment/80 leading-relaxed whitespace-pre-line">{caseData.briefing}</p>
-        <p className="text-xs text-parchment/40 mt-3">
-          Querying schema: <span className="font-mono">{caseData.targetSchema}</span>
-        </p>
-      </div>
-
-      <div className="card">
-        <h2 className="font-display text-lg text-brass mb-3">Query editor</h2>
-        <textarea
-          className="input-field font-mono text-sm h-32 resize-y"
-          value={sql}
-          onChange={(e) => setSql(e.target.value)}
-          spellCheck={false}
-        />
-        <button className="btn-primary mt-3" onClick={runQuery} disabled={running || !sql.trim()}>
-          {running ? 'Running...' : 'Run query'}
-        </button>
-
-        {queryError && <p className="text-rust text-sm mt-3">{queryError}</p>}
-=======
   if (loadError) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-10 text-rust bg-rust/10 border border-rust/30 rounded-md">
@@ -212,7 +184,6 @@ export default function CaseSolving() {
               ? ` · ${caseData.city}`
               : ''}
           </p>
->>>>>>> Stashed changes
 
           <p className="text-parchment/80 leading-relaxed whitespace-pre-line">
             {caseData.briefing}
@@ -252,23 +223,6 @@ export default function CaseSolving() {
             <p className="text-rust text-sm mt-3 bg-rust/10 border border-rust/30 rounded-md px-3 py-2">
               {queryError}
             </p>
-<<<<<<< Updated upstream
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="border-b border-brass/30 text-brass text-left">
-                  {queryResult.columns.map((col) => (
-                    <th key={col} className="py-2 pr-4 font-normal">{col}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {queryResult.rows.map((row, i) => (
-                  <tr key={i} className="border-b border-brass/10">
-                    {row.map((cell, j) => (
-                      <td key={j} className="py-2 pr-4 text-parchment/80">
-                        {cell === null ? <span className="text-parchment/30">NULL</span> : String(cell)}
-                      </td>
-=======
           )}
 
           {queryResult && (
@@ -285,15 +239,10 @@ export default function CaseSolving() {
                   <tr>
                     {queryResult.columns.map((col) => (
                       <th key={col}>{col}</th>
->>>>>>> Stashed changes
                     ))}
                   </tr>
                 </thead>
 
-<<<<<<< Updated upstream
-      <div className="card">
-        <h2 className="font-display text-lg text-brass mb-3">Make your accusation</h2>
-=======
                 <tbody>
                   {queryResult.rows.map((row, i) => (
                     <tr key={i}>
@@ -315,7 +264,6 @@ export default function CaseSolving() {
             </div>
           )}
         </div>
->>>>>>> Stashed changes
 
         {/* ACCUSATION */}
         <div className="card">
@@ -326,33 +274,6 @@ export default function CaseSolving() {
 
           {accusationResult ? (
             <div>
-<<<<<<< Updated upstream
-              <label className="block text-sm mb-1 text-parchment/80">
-                Suspect ID (from the case's <span className="font-mono">person</span> table)
-              </label>
-              <input
-                type="number"
-                className="input-field max-w-xs"
-                value={suspectId}
-                onChange={(e) => setSuspectId(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm mb-1 text-parchment/80">Your reasoning (optional)</label>
-              <textarea
-                className="input-field h-20 resize-y"
-                value={reasoning}
-                onChange={(e) => setReasoning(e.target.value)}
-              />
-            </div>
-            {accusationError && <p className="text-rust text-sm">{accusationError}</p>}
-            <button type="submit" className="btn-primary" disabled={accusing}>
-              {accusing ? 'Submitting...' : 'Accuse'}
-            </button>
-          </form>
-        )}
-=======
               <p
                 className={`text-lg mb-2 ${
                   accusationResult.correct
@@ -444,7 +365,6 @@ export default function CaseSolving() {
             </form>
           )}
         </div>
->>>>>>> Stashed changes
       </div>
     </div>
   )
