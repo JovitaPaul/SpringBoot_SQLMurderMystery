@@ -7,3 +7,6 @@ export const recordCompletion = (type, referenceId, referenceTitle, points) =>
   apiClient
     .post('/api/progress/events', { type, referenceId, referenceTitle, points })
     .then((r) => r.data)
+
+export const getMyActivity = (limit = 50) =>
+  apiClient.get(`/api/progress/me/activity?limit=${limit}`).then((r) => r.data)

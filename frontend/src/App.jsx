@@ -11,6 +11,7 @@ import QuizAttempt from './pages/QuizAttempt'
 import CaseList from './pages/CaseList'
 import CaseSolving from './pages/CaseSolving'
 import Leaderboard from './pages/Leaderboard'
+import Profile from './pages/Profile'
 
 export default function App() {
   const location = useLocation()
@@ -61,6 +62,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <CaseSolving />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

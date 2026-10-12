@@ -4,11 +4,14 @@ import { useAuth } from '../context/AuthContext'
 import { getMyProgress } from '../api/progressApi'
 import { getMyRank } from '../api/leaderboardApi'
 import { extractErrorMessage } from '../api/client'
+import { getTotalCases, getTotalQuizzes } from '../api/catalogApi'
+import { fraction } from '../hooks/useCompletion'
 
 export default function Dashboard() {
   const { user } = useAuth()
   const [progress, setProgress] = useState(null)
   const [rank, setRank] = useState(null)
+  const [totals, setTotals] = useState({ cases: null, quizzes: null })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
 
@@ -20,6 +23,8 @@ export default function Dashboard() {
       })
       .catch((err) => setError(extractErrorMessage(err, 'Could not load your progress.')))
       .finally(() => setLoading(false))
+    getTotalCases().then((cases) => setTotals((t) => ({ ...t, cases }))).catch(() => {})
+    getTotalQuizzes().then((quizzes) => setTotals((t) => ({ ...t, quizzes }))).catch(() => {})
   }, [])
 
   return (
@@ -34,8 +39,8 @@ export default function Dashboard() {
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <StatCard label="Total points" value={progress.totalPoints} />
-            <StatCard label="Quizzes passed" value={progress.quizzesPassed} />
-            <StatCard label="Cases solved" value={progress.casesSolved} />
+            <StatCard label="Quizzes passed" value={fraction(progress.quizzesPassed, totals.quizzes)} />
+            <StatCard label="Cases solved" value={fraction(progress.casesSolved, totals.cases)} />
             <StatCard
               label="Current streak"
               value={`${progress.currentStreak} day${progress.currentStreak === 1 ? '' : 's'}`}

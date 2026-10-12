@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { listQuizzes } from '../api/quizApi'
 import { extractErrorMessage } from '../api/client'
+import { useCompletion, fraction } from '../hooks/useCompletion'
 
 const difficultyColor = {
   BEGINNER: 'text-green-400',
@@ -13,6 +14,7 @@ export default function LearningPhase() {
   const [quizzes, setQuizzes] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const { passedQuizzes } = useCompletion()
 
   useEffect(() => {
     listQuizzes()
@@ -28,6 +30,10 @@ export default function LearningPhase() {
         Timed quizzes on core SQL topics. Pass one to earn points and keep your streak alive.
       </p>
 
+      <p className="text-sm text-brass mb-4">
+        Quizzes passed: <span className="font-semibold">{fraction(passedQuizzes.size, quizzes.length || null)}</span>
+      </p>
+
       {loading && <p className="text-parchment/60">Loading topics...</p>}
       {error && <p className="text-rust">{error}</p>}
 
@@ -39,7 +45,14 @@ export default function LearningPhase() {
             className="card flex items-center justify-between hover:border-brass transition-colors"
           >
             <div>
-              <h3 className="font-display text-lg text-brass">{quiz.topic}</h3>
+              <h3 className="font-display text-lg text-brass flex items-center gap-2">
+                {quiz.topic}
+                {passedQuizzes.has(Number(quiz.id)) && (
+                  <span className="text-xs text-green-400 border border-green-400/40 rounded-full px-2 py-0.5">
+                    ✓ Passed
+                  </span>
+                )}
+              </h3>
               <p className="text-parchment/60 text-sm">{quiz.description}</p>
             </div>
             <div className="text-right text-sm shrink-0 ml-4">

@@ -1,5 +1,6 @@
 package com.sqlmurdermystery.progress.controller;
 
+import com.sqlmurdermystery.progress.dto.ActivityDto;
 import com.sqlmurdermystery.progress.dto.ProgressSummaryDto;
 import com.sqlmurdermystery.progress.dto.RecordCompletionRequest;
 import com.sqlmurdermystery.progress.service.ProgressService;
@@ -7,6 +8,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/progress")
@@ -34,5 +37,13 @@ public class ProgressController {
     public ResponseEntity<ProgressSummaryDto> getMyProgress(Authentication authentication,
                                                              @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
         return ResponseEntity.ok(progressService.getSummary(authentication.getName(), authorizationHeader));
+    }
+
+    /** Full activity history for the profile page (newest first). */
+    @GetMapping("/me/activity")
+    public ResponseEntity<List<ActivityDto>> getMyActivity(Authentication authentication,
+                                                           @RequestParam(defaultValue = "50") int limit) {
+        int capped = Math.min(Math.max(limit, 1), 200);
+        return ResponseEntity.ok(progressService.getActivity(authentication.getName(), capped));
     }
 }

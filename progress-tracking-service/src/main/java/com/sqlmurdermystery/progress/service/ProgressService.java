@@ -8,6 +8,7 @@ import com.sqlmurdermystery.progress.model.ActivityType;
 import com.sqlmurdermystery.progress.model.UserProgress;
 import com.sqlmurdermystery.progress.repository.ActivityLogRepository;
 import com.sqlmurdermystery.progress.repository.UserProgressRepository;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,69 +20,77 @@ public class ProgressService {
 
     private final UserProgressRepository userProgressRepository;
     private final ActivityLogRepository activityLogRepository;
-    private final LeaderboardClient leaderboardClient;
     private final NotificationClient notificationClient;
 
     public ProgressService(UserProgressRepository userProgressRepository,
                             ActivityLogRepository activityLogRepository,
-                            LeaderboardClient leaderboardClient,
                             NotificationClient notificationClient) {
         this.userProgressRepository = userProgressRepository;
         this.activityLogRepository = activityLogRepository;
-        this.leaderboardClient = leaderboardClient;
         this.notificationClient = notificationClient;
     }
 
+    /**
+     * Records a quiz pass / case solve. Each distinct case or quiz counts ONCE: points,
+     * the solved/passed counters and the activity log are only touched the first time.
+     * Re-solving something still counts as activity for today's streak, but nothing else.
+     */
     @Transactional
     public ProgressSummaryDto recordCompletion(String username, RecordCompletionRequest request, String bearerToken) {
         UserProgress progress = userProgressRepository.findById(username)
                 .orElseGet(() -> new UserProgress(username));
 
-        progress.setTotalPoints(progress.getTotalPoints() + request.getPoints());
-        if (request.getType() == ActivityType.QUIZ) {
-            progress.setQuizzesPassed(progress.getQuizzesPassed() + 1);
-        } else {
-            progress.setCasesSolved(progress.getCasesSolved() + 1);
-        }
+        boolean alreadyCompleted = activityLogRepository.existsByUsernameAndTypeAndReferenceId(
+                username, request.getType(), request.getReferenceId());
+
         applyStreak(progress);
+
+        if (!alreadyCompleted) {
+            progress.setTotalPoints(progress.getTotalPoints() + request.getPoints());
+            if (request.getType() == ActivityType.QUIZ) {
+                progress.setQuizzesPassed(progress.getQuizzesPassed() + 1);
+            } else {
+                progress.setCasesSolved(progress.getCasesSolved() + 1);
+            }
+        }
         userProgressRepository.save(progress);
 
-        ActivityLog log = new ActivityLog();
-        log.setUsername(username);
-        log.setType(request.getType());
-        log.setReferenceId(request.getReferenceId());
-        log.setReferenceTitle(request.getReferenceTitle());
-        log.setPointsAwarded(request.getPoints());
-        activityLogRepository.save(log);
+        if (!alreadyCompleted) {
+            ActivityLog log = new ActivityLog();
+            log.setUsername(username);
+            log.setType(request.getType());
+            log.setReferenceId(request.getReferenceId());
+            log.setReferenceTitle(request.getReferenceTitle());
+            log.setPointsAwarded(request.getPoints());
+            activityLogRepository.save(log);
 
-        // Best-effort side effects — failures here are logged but never roll back or
-        // fail the request above; the learner's own progress record is the source of
-        // truth and must be saved regardless of these two calls' outcome.
-        leaderboardClient.setScore(bearerToken, progress.getTotalPoints());
-        notificationClient.sendEvent(
-                bearerToken,
-                request.getType() == ActivityType.CASE ? "Case solved!" : "Quiz passed!",
-                (request.getReferenceTitle() != null ? request.getReferenceTitle() : "Nice work")
-                        + " — +" + request.getPoints() + " points"
-                        + (progress.getCurrentStreak() > 1 ? " (streak: " + progress.getCurrentStreak() + " days)" : "")
-        );
+            // Best-effort — a notification failure never rolls back or fails the request.
+            notificationClient.sendEvent(
+                    bearerToken,
+                    request.getType() == ActivityType.CASE ? "Case solved!" : "Quiz passed!",
+                    (request.getReferenceTitle() != null ? request.getReferenceTitle() : "Nice work")
+                            + " — +" + request.getPoints() + " points"
+                            + (progress.getCurrentStreak() > 1 ? " (streak: " + progress.getCurrentStreak() + " days)" : "")
+            );
+        }
 
         return toSummaryDto(progress);
     }
 
-    /**
-     * Dashboard read. Also re-syncs the learner's total to the leaderboard (best-effort),
-     * so anyone whose earlier leaderboard update was missed — service down, timeout,
-     * Redis wiped — is repaired the next time they open their dashboard.
-     * Deliberately not @Transactional: no DB connection is held during the REST call.
-     */
+    /** Dashboard / profile read. */
+    @Transactional(readOnly = true)
     public ProgressSummaryDto getSummary(String username, String bearerToken) {
         UserProgress progress = userProgressRepository.findById(username)
                 .orElseGet(() -> new UserProgress(username));
-        if (bearerToken != null && progress.getTotalPoints() > 0) {
-            leaderboardClient.setScore(bearerToken, progress.getTotalPoints());
-        }
         return toSummaryDto(progress);
+    }
+
+    /** Full activity history (newest first), capped for safety. */
+    @Transactional(readOnly = true)
+    public List<ActivityDto> getActivity(String username, int limit) {
+        return activityLogRepository.findByUsernameOrderByOccurredAtDesc(username, PageRequest.of(0, limit)).stream()
+                .map(a -> new ActivityDto(a.getType().name(), a.getReferenceTitle(), a.getPointsAwarded(), a.getOccurredAt()))
+                .toList();
     }
 
     private void applyStreak(UserProgress progress) {
@@ -102,18 +111,27 @@ public class ProgressService {
     }
 
     private ProgressSummaryDto toSummaryDto(UserProgress progress) {
-        List<ActivityDto> recent = progress.getUsername() == null ? List.of() :
-                activityLogRepository.findTop10ByUsernameOrderByOccurredAtDesc(progress.getUsername()).stream()
-                        .map(a -> new ActivityDto(a.getType().name(), a.getReferenceTitle(), a.getPointsAwarded(), a.getOccurredAt()))
-                        .toList();
+        String username = progress.getUsername();
+
+        List<ActivityDto> recent = activityLogRepository.findTop10ByUsernameOrderByOccurredAtDesc(username).stream()
+                .map(a -> new ActivityDto(a.getType().name(), a.getReferenceTitle(), a.getPointsAwarded(), a.getOccurredAt()))
+                .toList();
+
+        // The solved/passed sets come from the activity log, so the counts shown are
+        // always "distinct things completed" and can never exceed the total available.
+        List<Long> solvedCaseIds = activityLogRepository.findCompletedReferenceIds(username, ActivityType.CASE);
+        List<Long> passedQuizIds = activityLogRepository.findCompletedReferenceIds(username, ActivityType.QUIZ);
 
         return new ProgressSummaryDto(
-                progress.getUsername(),
+                username,
                 progress.getTotalPoints(),
-                progress.getQuizzesPassed(),
-                progress.getCasesSolved(),
+                passedQuizIds.size(),
+                solvedCaseIds.size(),
                 progress.getCurrentStreak(),
                 progress.getLongestStreak(),
+                progress.getLastActivityDate(),
+                solvedCaseIds,
+                passedQuizIds,
                 recent
         );
     }

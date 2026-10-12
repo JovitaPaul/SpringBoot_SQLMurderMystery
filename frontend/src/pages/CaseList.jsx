@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { executeQuery } from '../api/queryApi'
 import { extractErrorMessage } from '../api/client'
+import { useCompletion, fraction } from '../hooks/useCompletion'
 
 const CASE_SCHEMA = 'defaultdb'
 const PAGE_SIZE = 12
@@ -13,6 +14,7 @@ export default function CaseList() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
   const [visible, setVisible] = useState(PAGE_SIZE)
+  const { solvedCases, totalCases } = useCompletion()
 
   useEffect(() => {
     executeQuery(CASE_SCHEMA, 'SELECT * FROM crime_scene_report ORDER BY case_id')
@@ -57,6 +59,10 @@ export default function CaseList() {
           Read the crime scene reports, follow the evidence, and accuse the culprit.
         </p>
 
+        <p className="text-sm text-brass mb-4">
+          Cases solved: <span className="font-semibold">{fraction(solvedCases.size, totalCases ?? (reports.length || null))}</span>
+        </p>
+
         {loading && (
           <p className="text-parchment/60 flex items-center gap-2">
             <span className="h-4 w-4 rounded-full border-2 border-brass/30 border-t-brass animate-spin" />
@@ -94,8 +100,13 @@ export default function CaseList() {
                       <span aria-hidden="true">🔎</span>
                       {r.type || 'Crime scene report'}
                     </h3>
-                    <span className="pill shrink-0 text-parchment/70 border-parchment/30">
-                      #{r.caseId}
+                    <span className="flex items-center gap-2 shrink-0">
+                      {solvedCases.has(Number(r.caseId)) && (
+                        <span className="text-xs border rounded-full px-2 py-0.5 text-green-400 border-green-400/40">✓ Solved</span>
+                      )}
+                      <span className="pill text-parchment/70 border-parchment/30">
+                        #{r.caseId}
+                      </span>
                     </span>
                   </div>
                   <p className="text-xs text-parchment/40 mb-2">

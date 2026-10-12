@@ -26,7 +26,9 @@ export default function Navbar() {
           <Link to="/cases" className={linkClass}>Case-Solving</Link>
           <Link to="/leaderboard" className={linkClass}>Leaderboard</Link>
           <span className="mx-2 text-parchment/50">|</span>
-          <span className="text-parchment/70">{user.username}</span>
+          <Link to="/profile" className={`${linkClass} text-brass font-semibold`} title="View your profile">
+            {user.username}
+          </Link>
           <button onClick={handleLogout} className={linkClass}>Log out</button>
         </div>
       )}
