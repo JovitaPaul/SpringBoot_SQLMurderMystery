@@ -57,7 +57,7 @@ public class ProgressService {
         // Best-effort side effects — failures here are logged but never roll back or
         // fail the request above; the learner's own progress record is the source of
         // truth and must be saved regardless of these two calls' outcome.
-        leaderboardClient.addScore(bearerToken, request.getPoints());
+        leaderboardClient.setScore(bearerToken, progress.getTotalPoints());
         notificationClient.sendEvent(
                 bearerToken,
                 request.getType() == ActivityType.CASE ? "Case solved!" : "Quiz passed!",
@@ -69,10 +69,18 @@ public class ProgressService {
         return toSummaryDto(progress);
     }
 
-    @Transactional(readOnly = true)
-    public ProgressSummaryDto getSummary(String username) {
+    /**
+     * Dashboard read. Also re-syncs the learner's total to the leaderboard (best-effort),
+     * so anyone whose earlier leaderboard update was missed — service down, timeout,
+     * Redis wiped — is repaired the next time they open their dashboard.
+     * Deliberately not @Transactional: no DB connection is held during the REST call.
+     */
+    public ProgressSummaryDto getSummary(String username, String bearerToken) {
         UserProgress progress = userProgressRepository.findById(username)
                 .orElseGet(() -> new UserProgress(username));
+        if (bearerToken != null && progress.getTotalPoints() > 0) {
+            leaderboardClient.setScore(bearerToken, progress.getTotalPoints());
+        }
         return toSummaryDto(progress);
     }
 

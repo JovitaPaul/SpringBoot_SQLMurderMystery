@@ -28,8 +28,8 @@ public class LeaderboardService {
         this.key = properties.getRedisKey();
     }
 
-    public void addScore(String username, int points) {
-        redisTemplate.opsForZSet().incrementScore(key, username, points);
+    public void setScore(String username, int totalPoints) {
+        redisTemplate.opsForZSet().add(key, username, totalPoints);
     }
 
     public List<LeaderboardEntryDto> getTop(int limit) {

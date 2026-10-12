@@ -31,7 +31,8 @@ public class ProgressController {
 
     /** Dashboard summary for the current learner. */
     @GetMapping("/me")
-    public ResponseEntity<ProgressSummaryDto> getMyProgress(Authentication authentication) {
-        return ResponseEntity.ok(progressService.getSummary(authentication.getName()));
+    public ResponseEntity<ProgressSummaryDto> getMyProgress(Authentication authentication,
+                                                             @RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
+        return ResponseEntity.ok(progressService.getSummary(authentication.getName(), authorizationHeader));
     }
 }

@@ -1,16 +1,16 @@
 package com.sqlmurdermystery.leaderboard.dto;
 
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 public class ScoreUpdateRequest {
 
-    @NotNull(message = "points is required")
-    @Positive(message = "points must be positive")
-    private Integer points;
+    @NotNull(message = "totalPoints is required")
+    @PositiveOrZero(message = "totalPoints must not be negative")
+    private Integer totalPoints;
 
     public ScoreUpdateRequest() {}
 
-    public Integer getPoints() { return points; }
-    public void setPoints(Integer points) { this.points = points; }
+    public Integer getTotalPoints() { return totalPoints; }
+    public void setTotalPoints(Integer totalPoints) { this.totalPoints = totalPoints; }
 }

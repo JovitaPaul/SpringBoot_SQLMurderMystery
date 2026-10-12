@@ -34,13 +34,13 @@ public class LeaderboardClient {
         this.serviceUrls = serviceUrls;
     }
 
-    public void addScore(String bearerToken, int points) {
+    public void setScore(String bearerToken, int totalPoints) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", bearerToken);
             restTemplate.postForEntity(
                     serviceUrls.getLeaderboardUrl() + "/api/leaderboard/score",
-                    new HttpEntity<>(Map.of("points", points), headers),
+                    new HttpEntity<>(Map.of("totalPoints", totalPoints), headers),
                     Void.class
             );
         } catch (RestClientException e) {

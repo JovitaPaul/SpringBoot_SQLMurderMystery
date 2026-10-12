@@ -21,11 +21,13 @@ public class LeaderboardController {
         this.leaderboardService = leaderboardService;
     }
 
-    /** Adds points to the current learner's score. Called by progress-tracking-service
-     *  with the learner's own forwarded bearer token after a quiz/case completion. */
+    /** Sets the current learner's score to their absolute total. Called by
+     *  progress-tracking-service (the source of truth) with the learner's own forwarded
+     *  bearer token. Setting rather than incrementing makes every call idempotent and
+     *  self-healing: a missed earlier update is corrected by the next one. */
     @PostMapping("/score")
-    public ResponseEntity<Void> addScore(@Valid @RequestBody ScoreUpdateRequest request, Authentication authentication) {
-        leaderboardService.addScore(authentication.getName(), request.getPoints());
+    public ResponseEntity<Void> setScore(@Valid @RequestBody ScoreUpdateRequest request, Authentication authentication) {
+        leaderboardService.setScore(authentication.getName(), request.getTotalPoints());
         return ResponseEntity.ok().build();
     }
 
