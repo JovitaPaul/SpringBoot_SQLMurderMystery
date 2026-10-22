@@ -100,7 +100,7 @@ services:
       QUERY_DB_HOST: mysql-1e392661-nitk-390.i.aivencloud.com
       QUERY_DB_PORT: 12751
       QUERY_DB_READONLY_USERNAME: smm_readonly
-      QUERY_DB_READONLY_PASSWORD: ${QUERY_DB_READONLY_PASSWORD}
+      QUERY_DB_READONLY_PASSWORD: ${QUERY_DB_READONLY_PASSWORD:-smm_readonly_pass}
       QUERY_ALLOWED_SCHEMA_PREFIX: case_
 
   progress-tracking-service:
